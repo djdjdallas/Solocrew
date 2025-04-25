@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/sonner";
+import { useToast } from "@/components/ui/sonner";
 import { useAuth } from "@/components/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,6 +14,7 @@ export function JoinPoolButton({
 }) {
   const [isJoining, setIsJoining] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
   const supabase = createClient();
