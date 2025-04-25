@@ -62,7 +62,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
         ? new Date(searchParams.startDate)
         : null,
       endDate: searchParams.endDate ? new Date(searchParams.endDate) : null,
-      category: searchParams.category || "all", // Use 'all' instead of empty string
+      category: searchParams.category || "",
     },
   });
 
@@ -75,7 +75,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
         ? new Date(searchParams.startDate)
         : null,
       endDate: searchParams.endDate ? new Date(searchParams.endDate) : null,
-      category: searchParams.category || "all", // Use 'all' instead of empty string
+      category: searchParams.category || "",
     });
   }, [searchParams, form]);
 
@@ -103,7 +103,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
       params.append("endDate", format(values.endDate, "yyyy-MM-dd"));
     }
 
-    if (values.category && values.category !== "all") {
+    if (values.category) {
       params.append("category", values.category);
     }
 
@@ -125,7 +125,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
       priceRange: [0, 5000],
       startDate: null,
       endDate: null,
-      category: "all", // Use 'all' instead of empty string
+      category: "",
     });
 
     setPriceRange([0, 5000]);
@@ -266,17 +266,14 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || "all"}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="All Categories" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="">All Categories</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.value} value={category.value}>
                           {category.label}

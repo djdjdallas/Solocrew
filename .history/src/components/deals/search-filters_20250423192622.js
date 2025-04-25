@@ -1,3 +1,4 @@
+// src/components/deals/search-filters.js
 "use client";
 
 import { useState, useEffect } from "react";
@@ -43,41 +44,42 @@ const filterSchema = z.object({
   category: z.string().optional(),
 });
 
-export function SearchFilters({ searchParams = {}, categories = [] }) {
+export function SearchFilters({ rawSearchParams = {}, categories = [] }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [priceRange, setPriceRange] = useState([0, 5000]);
 
-  // Use search params that are passed from parent
-  useEffect(() => {
-    setPriceRange([searchParams.priceMin || 0, searchParams.priceMax || 5000]);
-  }, [searchParams.priceMin, searchParams.priceMax]);
+  // Process the raw search params in the client component
+  const processedParams = {
+    location: rawSearchParams.location || "",
+    priceMin: rawSearchParams.priceMin
+      ? parseInt(rawSearchParams.priceMin, 10)
+      : 0,
+    priceMax: rawSearchParams.priceMax
+      ? parseInt(rawSearchParams.priceMax, 10)
+      : 5000,
+    startDate: rawSearchParams.startDate
+      ? new Date(rawSearchParams.startDate)
+      : null,
+    endDate: rawSearchParams.endDate ? new Date(rawSearchParams.endDate) : null,
+    category: rawSearchParams.category || "",
+    sort: rawSearchParams.sort || "recommended",
+  };
+
+  const [priceRange, setPriceRange] = useState([
+    processedParams.priceMin,
+    processedParams.priceMax,
+  ]);
 
   const form = useForm({
     resolver: zodResolver(filterSchema),
     defaultValues: {
-      location: searchParams.location || "",
-      priceRange: [searchParams.priceMin || 0, searchParams.priceMax || 5000],
-      startDate: searchParams.startDate
-        ? new Date(searchParams.startDate)
-        : null,
-      endDate: searchParams.endDate ? new Date(searchParams.endDate) : null,
-      category: searchParams.category || "all", // Use 'all' instead of empty string
+      location: processedParams.location,
+      priceRange: [processedParams.priceMin, processedParams.priceMax],
+      startDate: processedParams.startDate,
+      endDate: processedParams.endDate,
+      category: processedParams.category,
     },
   });
-
-  // Update form when searchParams change
-  useEffect(() => {
-    form.reset({
-      location: searchParams.location || "",
-      priceRange: [searchParams.priceMin || 0, searchParams.priceMax || 5000],
-      startDate: searchParams.startDate
-        ? new Date(searchParams.startDate)
-        : null,
-      endDate: searchParams.endDate ? new Date(searchParams.endDate) : null,
-      category: searchParams.category || "all", // Use 'all' instead of empty string
-    });
-  }, [searchParams, form]);
 
   // Build query string from form values
   const buildQueryString = (values) => {
@@ -103,8 +105,13 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
       params.append("endDate", format(values.endDate, "yyyy-MM-dd"));
     }
 
-    if (values.category && values.category !== "all") {
+    if (values.category) {
       params.append("category", values.category);
+    }
+
+    // Preserve sorting parameter if exists
+    if (rawSearchParams.sort) {
+      params.append("sort", rawSearchParams.sort);
     }
 
     return params.toString();
@@ -125,7 +132,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
       priceRange: [0, 5000],
       startDate: null,
       endDate: null,
-      category: "all", // Use 'all' instead of empty string
+      category: "",
     });
 
     setPriceRange([0, 5000]);
@@ -268,7 +275,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
                   <FormLabel>Category</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value || "all"}
+                    defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -276,7 +283,7 @@ export function SearchFilters({ searchParams = {}, categories = [] }) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
+                      <SelectItem value="">All Categories</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.value} value={category.value}>
                           {category.label}
