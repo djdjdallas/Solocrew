@@ -52,7 +52,40 @@ export async function fetchFeaturedDeals() {
 
     if (error) {
       console.error("Error fetching featured deals:", error);
-      return [];
+
+      // Let's try a simpler query without the relations to see if that works
+      const { data: simpleData, error: simpleError } = await supabase
+        .from("deals")
+        .select("*")
+        .eq("status", "active");
+
+      if (simpleError) {
+        console.error("Even simple query failed:", simpleError);
+        return [];
+      }
+
+      console.log("Simple query worked, found deals:", simpleData.length);
+
+      // Transform the simple data
+      return simpleData.map((deal) => {
+        return {
+          id: deal.id,
+          title: deal.title,
+          description: deal.description,
+          location: deal.location,
+          thumbnailUrl: deal.thumbnail_url,
+          originalPrice: deal.original_price,
+          discountedPrice: deal.original_price, // Default without discount calculation
+          providerName: "Provider", // Default without provider relation
+          providerLogo: null,
+          startDate: deal.start_date,
+          endDate: deal.end_date,
+          bookingDeadline: deal.booking_deadline,
+          minTravelers: deal.min_travelers,
+          currentTravelers: 0, // Default without deal_pools relation
+          category: deal.category,
+        };
+      });
     }
 
     console.log(`Found ${data.length} deals with complete relations`);
